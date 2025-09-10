@@ -90,7 +90,7 @@ Access the App
 
 **🎓 B.Tech in Information Technology (4th Year)**
 
-**🔗 LinkedIn**
+**🔗 LinkedIn :** https://www.linkedin.com/in/gudepu-sanjay-b306992a6/
 
 **💻 Tech Enthusiast | Python | Django | Java | Spring Boot | PostgreSQL | MySQL |**
 
