@@ -52,3 +52,46 @@ Check out the demo of **Properties Finder** here:
 ```bash
 git clone https://github.com/GudepuSanjay/properties-finder.git
 cd properties-finder
+python -m venv venv
+# Windows
+venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+
+Access the App
+👉 Open your browser and go to: http://127.0.0.1:8000/
+
+```
+---
+
+## 📌 Future Enhancements
+
+🔐 User authentication with JWT.
+
+💳 Payment gateway integration for booking confirmation.
+
+📍 Location-based property search with Google Maps API.
+
+📧 Email/SMS notifications for inquiries & bookings.
+
+📊 Dashboard analytics for agents and admins.
+
+🖼️ Multiple image uploads per property with gallery view.
+
+📱 Mobile-friendly responsive design improvements.
+
+---
+
+---
+## 👨‍💻 Author
+
+**Gudepu Sanjay**
+
+**🎓 B.Tech in Information Technology (4th Year)**
+
+**🔗 LinkedIn**
+
+**💻 Tech Enthusiast | Python | Django | Java | Spring Boot | PostgreSQL | MySQL |**
+
+---
