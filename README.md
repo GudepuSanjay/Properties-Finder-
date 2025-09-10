@@ -36,6 +36,14 @@ The goal of this project is to create a property management platform where users
 - **Frontend:** HTML, Tailwind CSS, JavaScript  
 - **Database:** (Django default SQLite / configurable to PostgreSQL/MySQL)  
 
+---
+
+## 🎥 Demo Video  
+Check out the demo of **Properties Finder** here:  
+👉 [Click here to watch the demo](DemoVideo/PropertiesFinderDemoVideo.mp4)  
+
+
+---
 
 
 ## ⚙️ Installation & Setup  
