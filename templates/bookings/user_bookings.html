@@ -171,11 +171,47 @@
 <!-- Cancel Confirmation Modal (JavaScript needed for functionality) -->
 <script>
 function openCancelConfirmation(bookingId) {
-    // Implementation for cancel confirmation modal
     if (confirm('Are you sure you want to cancel this booking?')) {
-        // Code to cancel booking would go here
-        console.log('Cancelling booking:', bookingId);
+        fetch(`/cancel-booking/${bookingId}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken"),
+                "Content-Type": "application/json"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                // Remove or update booking card
+                const bookingCard = document.getElementById(`booking-${bookingId}`);
+                if (bookingCard) {
+                    bookingCard.querySelector(".booking-card .absolute span").textContent = "Cancelled";
+                    bookingCard.querySelector(".booking-card .absolute span").className = "px-3 py-1 rounded-full text-xs font-bold bg-red-500 text-white shadow";
+                }
+            } else {
+                alert("Failed to cancel booking: " + data.message);
+            }
+        })
+        .catch(error => console.error("Error:", error));
     }
 }
+
+// CSRF token helper for Django
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 </script>
+
 {% endblock %}

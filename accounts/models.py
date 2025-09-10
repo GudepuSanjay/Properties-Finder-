@@ -13,7 +13,7 @@ class Profile(models.Model):
     address = models.TextField(blank=True, null=True)
     profile_image = models.ImageField(upload_to='profile_image/', blank=True, null=True)
 
-    # New agent-specific fields:
+    
     specialization = models.CharField(max_length=100, blank=True, null=True)
     properties_sold = models.PositiveIntegerField(default=0)
     years_experience = models.PositiveIntegerField(default=0)

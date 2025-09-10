@@ -3,13 +3,12 @@ from django.db.models import Q
 from accounts.models import Profile
 
 def agents_profiles(request):
-    # Get all agents
+    
     agents = Profile.objects.filter(role='agent').select_related('user')
     
-    # Get search parameter from request
     search_query = request.GET.get('search', '')
     
-    # Apply search filter if provided
+    # Search filter 
     if search_query:
         agents = agents.filter(
             Q(user__username__icontains=search_query) |

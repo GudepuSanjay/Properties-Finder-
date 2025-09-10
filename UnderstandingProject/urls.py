@@ -23,10 +23,13 @@ import properties_bookings
 from buying_properties import urls
 from rent_properties import urls
 from agents_profiles import urls
+from django.views.generic import RedirectView
+
 # from properties import urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    #  path('', RedirectView.as_view(url='/login/', permanent=False)),
     path('',include('accounts.urls')),
     # path('home/',include('properties.urls')),
     path('',include('properties.urls')),

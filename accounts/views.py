@@ -9,27 +9,43 @@ from django.contrib.auth.decorators import login_required
 from properties import views
 from buying_properties.views import buying_properties
 # Create your views here.
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from .forms import SignupForm
+from .models import Profile
+
 def signup_view(request):
     if request.method == 'POST':
-        form=SignupForm(request.POST)
+        form = SignupForm(request.POST)
         if form.is_valid():
-            user=form.save(commit=False)
+            # Save user
+            user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])
             user.save()
-            role=request.POST.get('role')
-            
-            Profile.objects.create(user=user,role=role)
-            messages.success(request,'Account Created Successfully!')
 
-            if role=='agent':
+            # Create profile
+            role = request.POST.get('role')
+            Profile.objects.create(user=user, role=role)
+
+            # Auto-login
+            user = authenticate(username=form.cleaned_data['username'],
+                                password=form.cleaned_data['password'])
+            if user:
+                login(request, user)
+
+            messages.success(request, 'Account Created Successfully!')
+
+            # Redirect based on role
+            if role == 'agent':
                 return redirect('agent_dashboard')
             else:
                 return redirect('user_dashboard')
-            
-            # return redirect('login')
+        else:
+            print(form.errors)  # Debug
     else:
-        form=SignupForm()
-    return render(request,'signup.html',{'form':form})
+        form = SignupForm()
+    return render(request, 'signup.html', {'form': form})
 
 def login_view(request):
     if request.method=='POST':
@@ -42,11 +58,7 @@ def login_view(request):
             if role=='agent':
                 return redirect('agent_dashboard')
             else:
-                # properties=Property.objects.filter(status='Available')
-                # return render(request,'user_dashboard.html',{'properties':properties})
                 return redirect('user_dashboard')
-            # messages.success(request,'Logged in successfully!')
-            # return redirect('home')
     else:
         form=LoginForm()
     return render(request,'login.html',{'form':form})
@@ -129,8 +141,7 @@ def user_dashboard(request):
 
     if amenities:
         amenities_list = amenities.split(',')
-        # Create Q objects for each selected amenity
-        
+    
         amenity_filters = Q()
         for amenity in amenities_list:
             # For MultiSelectField, we need to check if the amenity is in the list
@@ -139,9 +150,6 @@ def user_dashboard(request):
 
     return render(request,"user_dashboard.html",{"properties":properties})
     
-
-
-
 
 
 @login_required

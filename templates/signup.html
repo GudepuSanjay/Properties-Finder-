@@ -181,19 +181,23 @@ button:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(255,126,95
 </div>
 
 <script>
-const roleSelect = document.getElementById('id_role');
-const agentCard = document.getElementById('agentCard');
-const signupCard = document.getElementById('signupCard');
+document.addEventListener("DOMContentLoaded", () => {
+    const roleSelect = document.getElementById('id_role');
+    const agentCard = document.getElementById('agentCard');
+    const signupCard = document.getElementById('signupCard');
 
-roleSelect.addEventListener('change', () => {
-    if(roleSelect.value === 'agent'){
-        agentCard.classList.add('show');
-        signupCard.classList.add('shift-left');
-    } else {
-        agentCard.classList.remove('show');
-        signupCard.classList.remove('shift-left');
-    }
+    roleSelect.addEventListener('change', () => {
+        if (roleSelect.value === 'agent') {
+            agentCard.classList.add('show');
+            signupCard.classList.add('shift-left');
+        } else {
+            agentCard.classList.remove('show');
+            signupCard.classList.remove('shift-left');
+        }
+    });
 });
+
+
 </script>
 
 </body>

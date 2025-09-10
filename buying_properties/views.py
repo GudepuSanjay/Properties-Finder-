@@ -30,12 +30,5 @@ def buying_properties(request):
         'villa_count': villa_count,
         'plot_count': plot_count,
         'commercial_count': commercial_count
-        # 'commercial_count': commercial_count,
-        # 'bangalore_count': bangalore_count,
-        # 'mumbai_count': mumbai_count,
-        # 'delhi_count': delhi_count,
     }
-
-
-
     return render(request,'accounts/buyers.html',context)
