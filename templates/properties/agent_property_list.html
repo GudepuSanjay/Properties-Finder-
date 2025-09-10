@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="text-2xl font-bold mb-4">My Listed Properties</h2>
+<ul>
+    {% for property in properties %}
+        <li>{{ property.title }} - {{ property.status }}</li>
+    {% endfor %}
+</ul>
+<a href="{% url 'add_property' %}" class="text-blue-600 mt-4 block">+ Add New Property</a>
+{% endblock %}

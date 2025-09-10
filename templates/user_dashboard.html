@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Your Dream Property | PropFinder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .property-card {
+            min-height: 520px;
+            display: flex;
+            flex-direction: column;
+        }
+        .property-image {
+            height: 220px;
+            object-fit: cover;
+        }
+        .filter-active {
+            background-color: #3b82f6 !important;
+            color: white !important;
+        }
+        .filter-button {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .status-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-available {
+            background-color: #10b981;
+            color: white;
+        }
+        .status-sold {
+            background-color: #ef4444;
+            color: white;
+        }
+        .status-rented {
+            background-color: #8b5cf6;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-home text-blue-600 text-2xl"></i>
+                <span class="text-xl font-bold text-blue-600">PropFinder</span>
+            </div>
+            <nav class="hidden md:flex space-x-8">
+                <a href="{% url 'user_dashboard'%}" class="text-gray-700 hover:text-blue-600 font-medium">Dashboard</a>
+                <a href="{% url 'buy_properties'%}" class="text-gray-700 hover:text-blue-600 font-medium">Buy</a>
+                <a href="{% url 'rent_properties'%}" class="text-gray-700 hover:text-blue-600 font-medium">Rent</a>
+                <a href="{% url 'agents_profiles'%}" class="text-gray-700 hover:text-blue-600 font-medium">Agents</a>
+                <a href="{% url 'user_bookings'%}" class="text-gray-700 hover:text-blue-600 font-medium">My Bookings</a>
+            </nav>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <a href="{% url 'update_profile_user' %}" class="flex items-center max-w-xs text-sm rounded-full focus:outline-none" id="user-menu-button">
+                        <span class="sr-only">Open user menu</span>
+                        {% if request.user.profile.profile_image %}
+                        <img src="{{ request.user.profile.profile_image.url }}" alt="Profile" class="w-10 h-10 rounded-full">
+                        {% endif %}
+                        <span class="ml-2 text-sm font-medium text-slate-700">{{request.user.username}}</span>
+                    </a>
+                </div>
+                <button class="md:hidden text-gray-700">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Search and Filter Section -->
+    <div class="bg-blue-600 py-6">
+        <div class="container mx-auto px-4">
+            <h1 class="text-2xl md:text-3xl font-bold text-white mb-6">Find Your Perfect Property</h1>
+            
+            <!-- Main Search Form -->
+            <form method="GET" action="{% url 'user_dashboard' %}" id="main-search-form">
+                <div class="bg-white rounded-lg shadow-lg p-4">
+                    <div class="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
+                        
+                        <!-- Location -->
+                        <div class="flex-1">
+                            <label class="block text-gray-700 text-sm font-medium mb-1">Location</label>
+                            <div class="relative">
+                                <input type="text" name="location" value="{{ request.GET.location }}" 
+                                       placeholder="City, Neighborhood, or ZIP" 
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <i class="fas fa-map-marker-alt absolute right-3 top-3 text-gray-400"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Property Type -->
+                        <div class="flex-1">
+                            <label class="block text-gray-700 text-sm font-medium mb-1">Property Type</label>
+                            <select name="property_type"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">All Types</option>
+                                <option value="Flat" {% if request.GET.property_type == "Flat" %}selected{% endif %}>Flat</option>
+                                <option value="Villa" {% if request.GET.property_type == "Villa" %}selected{% endif %}>Villa</option>
+                                <option value="Plot" {% if request.GET.property_type == "Plot" %}selected{% endif %}>Plot</option>
+                                <option value="Commercial" {% if request.GET.property_type == "Commercial" %}selected{% endif %}>Commercial</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Price Range -->
+                        <div class="flex-1">
+                            <label class="block text-gray-700 text-sm font-medium mb-1">Price Range</label>
+                            <div class="flex space-x-2">
+                                <input type="number" name="min_price" value="{{ request.GET.min_price }}" 
+                                       placeholder="Min" class="w-1/2 px-4 py-2 border border-gray-300 rounded-lg">
+                                <input type="number" name="max_price" value="{{ request.GET.max_price }}" 
+                                       placeholder="Max" class="w-1/2 px-4 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                        </div>
+                        
+                        <!-- Search Button -->
+                        <div class="flex items-end">
+                            <button type="submit" 
+                                    class="w-full md:w-auto px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 flex items-center justify-center">
+                                <i class="fas fa-search mr-2"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Extra Filters -->
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <button type="button" name="type_property" value="Sale"
+                                class="type-filter px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition">
+                            For Sale
+                        </button>
+                        <button type="button" name="type_property" value="Rent"
+                                class="type-filter px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition">
+                            For Rent
+                        </button>
+                        <button type="button" name="status" value="Available"
+                                class="status-filter px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition">
+                            Available
+                        </button>
+                        <button type="button" name="status" value="Sold"
+                                class="status-filter px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition">
+                            Sold
+                        </button>
+                        <button type="button" name="status" value="Rented"
+                                class="status-filter px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition">
+                            Rented
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Hidden inputs for sidebar filters -->
+                <input type="hidden" name="min_bedrooms" id="min-bedrooms-input" value="{{ request.GET.min_bedrooms }}">
+                <input type="hidden" name="min_bathrooms" id="min-bathrooms-input" value="{{ request.GET.min_bathrooms }}">
+                <input type="hidden" name="min_sqft" id="min-sqft-input" value="{{ request.GET.min_sqft }}">
+                <input type="hidden" name="max_sqft" id="max-sqft-input" value="{{ request.GET.max_sqft }}">
+                <input type="hidden" name="amenities" id="amenities-input" value="{{ request.GET.amenities }}">
+                <input type="hidden" name="type_property" id="type-property-input" value="{{ request.GET.type_property }}">
+                <input type="hidden" name="status" id="status-input" value="{{ request.GET.status }}">
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row">
+            <!-- Filters Sidebar -->
+            <aside class="w-full md:w-64 lg:w-80 mb-8 md:mb-0 md:mr-8">
+                <div class="bg-white rounded-lg shadow-md p-6 sticky top-4">
+                    <h2 class="text-lg font-bold mb-4">Refine Search</h2>
+                    
+                    <div class="mb-6">
+                        <h3 class="font-medium mb-2">Bedrooms</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" data-value="0" class="filter-button bedroom-filter px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200">Studio</button>
+                            <button type="button" data-value="1" class="filter-button bedroom-filter px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200">1+</button>
+                            <button type="button" data-value="2" class="filter-button bedroom-filter px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200">2+</button>
+                            <button type="button" data-value="3" class="filter-button bedroom-filter px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200">3+</button>
+                            <button type="button" data-value="4" class="filter-button bedroom-filter px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200">4+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h3 class="font-medium mb-2">Bathrooms</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" data-value="1" class="filter-button bathroom-filter px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200">1+</button>
+                            <button type="button" data-value="2" class="filter-button bathroom-filter px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200">2+</button>
+                            <button type="button" data-value="3" class="filter-button bathroom-filter px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200">3+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h3 class="font-medium mb-2">Square Feet</h3>
+                        <div class="flex items-center space-x-2 mb-2">
+                            <input type="number" id="min-sqft" placeholder="Min" class="w-1/2 px-3 py-1 border border-gray-300 rounded-lg text-sm" value="{{ request.GET.min_sqft }}">
+                            <span>to</span>
+                            <input type="number" id="max-sqft" placeholder="Max" class="w-1/2 px-3 py-1 border border-gray-300 rounded-lg text-sm" value="{{ request.GET.max_sqft }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h3 class="font-medium mb-2">Amenities</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" class="amenity-checkbox rounded text-blue-600" value="parking">
+                                <span>Parking</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" class="amenity-checkbox rounded text-blue-600" value="air_conditioning">
+                                <span>Air Conditioning</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" class="amenity-checkbox rounded text-blue-600" value="swimming_pool">
+                                <span>Swimming Pool</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" class="amenity-checkbox rounded text-blue-600" value="gym">
+                                <span>Gym</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="apply-sidebar-filters" class="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Apply Filters</button>
+                    <button type="button" id="clear-all-filters" class="w-full py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition mt-2">Clear All Filters</button>
+                </div>
+            </aside>
+            
+            <!-- Property Listings -->
+            <div class="flex-1">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">
+                        {% if properties %}
+                            {{ properties|length }} Properties Found
+                        {% else %}
+                            No Properties Found
+                        {% endif %}
+                    </h2>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-600">Sort by:</span>
+                        <select class="text-sm border border-gray-300 rounded-lg px-3 py-1">
+                            <option>Newest</option>
+                            <option>Price: Low to High</option>
+                            <option>Price: High to Low</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                    {% for property in properties %}
+                    <div class="property-card bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg hover:-translate-y-1 border border-gray-100 transition-all duration-300">
+                        <div class="relative overflow-hidden">
+                            <img src="{{ property.image.url }}" alt="Property" class="w-full property-image transition-transform duration-500 hover:scale-105">
+                            
+                            <!-- Status badge -->
+                            <div class="status-badge {% if property.status == 'Available' %}status-available{% elif property.status == 'Sold' %}status-sold{% else %}status-rented{% endif %}">
+                                {{ property.status }}
+                            </div>
+                            
+                            <div class="absolute top-2 right-2">
+                                <button class="bg-white p-2 rounded-full shadow-md text-gray-700 hover:text-blue-600 transition-colors">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6 flex-grow">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800">₹{{ property.price }}</h3>
+                                    <p class="text-gray-500 text-sm">{{ property.type_property }}</p>
+                                </div>
+                                <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full capitalize">{{ property.status }}</span>
+                            </div>
+                            
+                            <h4 class="text-lg font-semibold mb-2 text-gray-800 hover:text-blue-600 transition-colors">
+                                <a href="{% url 'property_detail' property.id %}">{{ property.title }}</a>
+                            </h4>
+                            
+                            <p class="text-gray-600 text-sm mb-4 flex items-center">
+                                <i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>
+                                {{ property.locations|default:"Location not available" }}
+                            </p>
+                            
+                            <!-- Property specs -->
+                            <div class="grid grid-cols-3 gap-2 text-sm text-gray-500 border-t border-gray-100 pt-4 mb-4">
+                                <span class="flex items-center"><i class="fas fa-bed mr-1"></i> {{ property.bedrooms }} Bed</span>
+                                <span class="flex items-center"><i class="fas fa-bath mr-1"></i> {{ property.bathrooms }} Bath</span>
+                                <span class="flex items-center"><i class="fas fa-ruler-combined mr-1"></i> {{ property.squarefeets }} sq.ft</span>
+                            </div>
+                            
+                            <!-- Booking Section -->
+                            <div class="mt-auto border-t border-gray-100 pt-4">
+                                <div class="flex justify-between items-center mb-4">
+                                    <div class="flex items-center text-sm text-gray-500">
+                                        <i class="far fa-calendar-alt mr-1"></i>
+                                        <span>Listed {{ property.created_at|timesince }} ago</span>
+                                    </div>
+                                    <a href="{% url 'property_detail' property.id %}" class="text-blue-600 text-sm font-medium hover:text-blue-800 transition-colors">
+                                        View Details
+                                    </a>
+                                </div>
+                                
+                                {% if property.status == 'Available' %}
+                                <a href="{% url 'book_visit' property.id %}" class="block">
+                                    <button class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 flex items-center justify-center">
+                                        <i class="fas fa-calendar-check mr-2"></i> Book Viewing
+                                    </button>
+                                </a>
+                                {% else %}
+                                <button class="w-full py-3 bg-gray-300 text-gray-700 rounded-lg cursor-not-allowed flex items-center justify-center">
+                                    <i class="fas fa-ban mr-2"></i> Not Available
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-span-full text-center py-12">
+                        <div class="bg-white p-8 rounded-xl shadow-sm">
+                            <i class="fas fa-home text-4xl text-gray-300 mb-4"></i>
+                            <h3 class="text-xl font-medium text-gray-700">No properties found</h3>
+                            <p class="text-gray-500 mt-2">Try adjusting your search filters or <a href="{% url 'user_dashboard' %}" class="text-blue-600 hover:underline">clear all filters</a></p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if properties %}
+                <div class="mt-8 flex justify-center">
+                    <nav class="flex items-center space-x-2">
+                        <a href="#" class="px-3 py-1 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">Previous</a>
+                        <a href="#" class="px-3 py-1 bg-blue-600 text-white rounded-lg">1</a>
+                        <a href="#" class="px-3 py-1 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">2</a>
+                        <a href="#" class="px-3 py-1 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">3</a>
+                        <span class="px-2 text-gray-500">...</span>
+                        <a href="#" class="px-3 py-1 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">10</a>
+                        <a href="#" class="px-3 py-1 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">Next</a>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <!-- Newsletter -->
+    <section class="bg-gray-100 py-12 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-2xl font-bold mb-4">Get New Properties Directly to Your Inbox</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto mb-6">Sign up for our newsletter and receive alerts for new properties that match your search criteria.</p>
+            <div class="max-w-md mx-auto flex">
+                <input type="email" placeholder="Your email address" class="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button class="px-6 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition">Subscribe</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-bold mb-4">PropFinder</h3>
+                    <p class="text-gray-400">Finding your dream home since 2010. We connect buyers, renters, and sellers across the country.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Buy Properties</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Rent Properties</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Find Agents</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Mortgage Calculator</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Company</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Connect With Us</h4>
+                    <div class="flex space-x-4 mb-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <p class="text-gray-400">support@propfinder.com</p>
+                    <p class="text-gray-400">+1 (555) 123-4567</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400 text-sm">
+                <p>© 2023 PropFinder. All rights reserved. | <a href="#" class="hover:text-white transition">Privacy Policy</a> | <a href="#" class="hover:text-white transition">Terms of Service</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize filter states from URL parameters
+            initializeFiltersFromUrl();
+            
+            // Bedroom filter buttons
+            const bedroomFilters = document.querySelectorAll('.bedroom-filter');
+            bedroomFilters.forEach(button => {
+                button.addEventListener('click', function() {
+                    bedroomFilters.forEach(btn => btn.classList.remove('filter-active'));
+                    this.classList.add('filter-active');
+                    document.getElementById('min-bedrooms-input').value = this.getAttribute('data-value');
+                });
+            });
+            
+            // Bathroom filter buttons
+            const bathroomFilters = document.querySelectorAll('.bathroom-filter');
+            bathroomFilters.forEach(button => {
+                button.addEventListener('click', function() {
+                    bathroomFilters.forEach(btn => btn.classList.remove('filter-active'));
+                    this.classList.add('filter-active');
+                    document.getElementById('min-bathrooms-input').value = this.getAttribute('data-value');
+                });
+            });
+            
+            // Square feet inputs
+            const minSqftInput = document.getElementById('min-sqft');
+            const maxSqftInput = document.getElementById('max-sqft');
+            
+            minSqftInput.addEventListener('change', function() {
+                document.getElementById('min-sqft-input').value = this.value;
+            });
+            
+            maxSqftInput.addEventListener('change', function() {
+                document.getElementById('max-sqft-input').value = this.value;
+            });
+            
+            // Amenity checkboxes
+            const amenityCheckboxes = document.querySelectorAll('.amenity-checkbox');
+            amenityCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateAmenitiesInput);
+            });
+            
+            // Type and status filters
+            const typeFilters = document.querySelectorAll('.type-filter');
+            const statusFilters = document.querySelectorAll('.status-filter');
+            
+            typeFilters.forEach(button => {
+                button.addEventListener('click', function() {
+                    typeFilters.forEach(btn => btn.classList.remove('filter-active'));
+                    this.classList.add('filter-active');
+                    document.getElementById('type-property-input').value = this.getAttribute('value');
+                });
+            });
+            
+            statusFilters.forEach(button => {
+                button.addEventListener('click', function() {
+                    statusFilters.forEach(btn => btn.classList.remove('filter-active'));
+                    this.classList.add('filter-active');
+                    document.getElementById('status-input').value = this.getAttribute('value');
+                });
+            });
+            
+            // Apply filters button
+            document.getElementById('apply-sidebar-filters').addEventListener('click', function() {
+                document.getElementById('main-search-form').submit();
+            });
+            
+            // Clear all filters button
+            document.getElementById('clear-all-filters').addEventListener('click', function() {
+                window.location.href = "{% url 'user_dashboard' %}";
+            });
+            
+            function updateAmenitiesInput() {
+                const selectedAmenities = Array.from(amenityCheckboxes)
+                    .filter(checkbox => checkbox.checked)
+                    .map(checkbox => checkbox.value);
+                
+                document.getElementById('amenities-input').value = selectedAmenities.join(',');
+            }
+            
+            function initializeFiltersFromUrl() {
+                // Initialize bedroom filter
+                const minBedrooms = "{{ request.GET.min_bedrooms }}";
+                if (minBedrooms) {
+                    const bedroomButton = document.querySelector(`.bedroom-filter[data-value="${minBedrooms}"]`);
+                    if (bedroomButton) {
+                        bedroomButton.classList.add('filter-active');
+                    }
+                }
+                
+                // Initialize bathroom filter
+                const minBathrooms = "{{ request.GET.min_bathrooms }}";
+                if (minBathrooms) {
+                    const bathroomButton = document.querySelector(`.bathroom-filter[data-value="${minBathrooms}"]`);
+                    if (bathroomButton) {
+                        bathroomButton.classList.add('filter-active');
+                    }
+                }
+                
+                // Initialize amenities
+                const amenities = "{{ request.GET.amenities }}";
+                if (amenities) {
+                    const amenityValues = amenities.split(',');
+                    amenityCheckboxes.forEach(checkbox => {
+                        if (amenityValues.includes(checkbox.value)) {
+                            checkbox.checked = true;
+                        }
+                    });
+                    updateAmenitiesInput();
+                }
+                
+                // Initialize type filter
+                const typeProperty = "{{ request.GET.type_property }}";
+                if (typeProperty) {
+                    const typeButton = document.querySelector(`.type-filter[value="${typeProperty}"]`);
+                    if (typeButton) {
+                        typeButton.classList.add('filter-active');
+                    }
+                }
+                
+                // Initialize status filter
+                const status = "{{ request.GET.status }}";
+                if (status) {
+                    const statusButton = document.querySelector(`.status-filter[value="${status}"]`);
+                    if (statusButton) {
+                        statusButton.classList.add('filter-active');
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

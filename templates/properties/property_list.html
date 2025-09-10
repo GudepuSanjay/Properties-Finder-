@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="text-xl font-bold mb-4">Available Properties</h2>
+<div class="grid grid-cols-3 gap-4">
+    {% for property in properties %}
+    <div class="p-4 shadow rounded border">
+        <img src="{{ property.image.url }}" class="w-full h-40 object-cover mb-2">
+        <h3 class="font-bold">{{ property.title }}</h3>
+        <p>{{ property.price }} | {{ property.locations }}</p>
+        <a href="{% url 'property_detail' property.pk %}" class="text-blue-600 text-sm">View Details</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

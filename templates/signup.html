@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RealEstate Pro | Sign Up</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary: #4a6bff;
+    --secondary: #ff7e5f;
+    --dark: #1a1d2b;
+    --shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
+
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    overflow-x:hidden;
+    padding:20px;
+}
+
+.container {
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    gap:20px;
+    position: relative;
+    transition: all 0.7s ease;
+}
+
+/* Common card style */
+.card {
+    width: 350px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 20px;
+    padding: 30px 25px;
+    box-shadow: var(--shadow);
+    position: relative;
+    transition: all 0.7s ease;
+}
+
+.card::before {
+    content:'';
+    position:absolute;
+    top:-50%; left:-50%;
+    width:200%; height:200%;
+    background: linear-gradient(45deg, var(--secondary) 0%, var(--primary) 100%);
+    opacity:0.1;
+    transform: rotate(30deg);
+    z-index:-1;
+}
+
+.card h2, .card h3 {
+    text-align:center;
+    margin-bottom:20px;
+    color: var(--dark);
+    position:relative;
+}
+
+.card h2::after, .card h3::after {
+    content:'';
+    position:absolute;
+    bottom:-10px; left:50%;
+    transform: translateX(-50%);
+    width:50px; height:3px;
+    background: linear-gradient(to right, var(--secondary), var(--primary));
+    border-radius:3px;
+}
+
+.form-group { margin-bottom:15px; }
+label { display:block; margin-bottom:6px; color:var(--dark); font-weight:500; }
+input, select, textarea {
+    width:100%; padding:10px 12px;
+    border:2px solid #e0e3e8; border-radius:10px;
+    font-size:14px; transition:all 0.3s ease;
+    background-color:#f9fafc;
+}
+input:focus, select:focus, textarea:focus {
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 3px rgba(255,126,95,0.2);
+    outline:none;
+    background-color:white;
+}
+textarea { min-height:70px; resize:vertical; }
+
+button {
+    width:100%; padding:12px;
+    background: linear-gradient(to right, var(--secondary), var(--primary));
+    border:none; border-radius:10px;
+    color:white; font-size:16px; font-weight:600;
+    cursor:pointer; margin-top:8px;
+    box-shadow:0 4px 15px rgba(255,126,95,0.3);
+    transition: all 0.3s ease;
+}
+button:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(255,126,95,0.4); }
+
+.login-link { text-align:center; margin-top:15px; color:#6b7280; font-size:14px; }
+.login-link a { color: var(--secondary); text-decoration:none; font-weight:500; transition:all 0.3s ease; }
+.login-link a:hover { color: var(--primary); }
+
+.password-hint { font-size:12px; color:#6b7280; margin-top:5px; }
+
+/* Agent card hidden initially */
+.agent-fields {
+    position:absolute;
+    left:100%; /* off-screen right */
+    top:0;
+    opacity:0;
+    transition: all 0.7s ease;
+    width: 350px;
+}
+
+/* Show agent card on selecting agent */
+.agent-fields.show {
+    left: 370px; /* next to signup card */
+    opacity:1;
+}
+
+/* Shift signup card to left */
+.signup-container.shift-left {
+    transform: translateX(-180px);
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <form method="post" class="card-wrapper" style="display:flex; gap:20px; position:relative;">
+        {% csrf_token %}
+        
+        <!-- Signup Card -->
+        <div class="card signup-container" id="signupCard">
+            <h2>Join RealEstate Pro</h2>
+            <div class="form-group">
+                <label for="id_username">Username</label>
+                <input type="text" name="username" id="id_username" placeholder="Choose a username" required>
+            </div>
+            <div class="form-group">
+                <label for="id_email">Email</label>
+                <input type="email" name="email" id="id_email" placeholder="Your email address" required>
+            </div>
+            <div class="form-group">
+                <label for="id_password">Password</label>
+                <input type="password" name="password" id="id_password" placeholder="Create a password" required>
+                <p class="password-hint">At least 8 characters with numbers and letters</p>
+            </div>
+            <div class="form-group">
+                <label for="id_role">I am a</label>
+                <select name="role" id="id_role" required>
+                    <option value="">Select your role</option>
+                    <option value="agent">Real Estate Agent</option>
+                    <option value="user">Property Buyer/Renter</option>
+                </select>
+            </div>
+
+            <button type="submit">Create Account</button>
+            <div class="login-link">
+                Already have an account? <a href="{% url 'login' %}">Login</a>
+            </div>
+        </div>
+
+        <!-- Agent Fields (part of same form) -->
+        <div class="card agent-fields" id="agentCard">
+            <h3>Agent Details</h3>
+            <div class="form-group"><label>Specialization</label><input type="text" name="specialization"></div>
+            <div class="form-group"><label>Properties Sold</label><input type="number" name="properties_sold" value="0"></div>
+            <div class="form-group"><label>Years of Experience</label><input type="number" name="years_experience" value="0"></div>
+            <div class="form-group"><label>Client Satisfaction (%)</label><input type="number" step="0.1" name="client_satisfaction" value="0.0"></div>
+            <div class="form-group"><label>Property Types</label><input type="text" name="property_types" placeholder="Comma-separated list"></div>
+            <div class="form-group"><label>Description</label><textarea name="description"></textarea></div>
+            <div class="form-group"><label>Rating</label><input type="number" step="0.1" name="rating" value="0.0"></div>
+        </div>
+    </form>
+</div>
+
+<script>
+const roleSelect = document.getElementById('id_role');
+const agentCard = document.getElementById('agentCard');
+const signupCard = document.getElementById('signupCard');
+
+roleSelect.addEventListener('change', () => {
+    if(roleSelect.value === 'agent'){
+        agentCard.classList.add('show');
+        signupCard.classList.add('shift-left');
+    } else {
+        agentCard.classList.remove('show');
+        signupCard.classList.remove('shift-left');
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Real Estate Agents | PropFinder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-home text-blue-600 text-2xl"></i>
+                <span class="text-xl font-bold text-blue-600">PropFinder</span>
+            </div>
+            <nav class="hidden md:flex space-x-8">
+                <a href="{% url 'user_dashboard'%}" class="text-gray-700 hover:text-blue-600 font-medium">Dashboard</a>
+                <a href="{% url 'buy_properties' %}" class="text-gray-700 hover:text-blue-600 font-medium">Buy</a>
+                <a href="{% url 'rent_properties' %}" class="text-gray-700 hover:text-blue-600 font-medium">Rent</a>
+                <a href="{% url 'agents_profiles' %}" class="text-blue-600 font-medium">Agents</a>
+                <a href="#" class="text-gray-700 hover:text-blue-600 font-medium">About</a>
+            </nav>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <a href="{% url 'update_profile_user' %}" class="flex items-center max-w-xs text-sm rounded-full focus:outline-none" id="user-menu-button">
+                        <span class="sr-only">Open user menu</span>
+                        {% if request.user.profile.profile_image %}
+                        <img src="{{ request.user.profile.profile_image.url }}" alt="Profile" class="w-10 h-10 rounded-full">
+                        {% endif %}
+                        <span class="ml-2 text-sm font-medium text-slate-700">{{request.user.username}}</span>
+                    </a>
+                </div>
+                <button class="md:hidden text-gray-700">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 py-16 text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">Connect with Top Real Estate Agents</h1>
+            <p class="text-xl mb-8 max-w-2xl mx-auto">Find experienced professionals to help you buy, sell, or rent properties</p>
+            <form method="GET" action="{% url 'agents_profiles' %}" class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-4">
+                <div class="flex">
+                    <div class="relative flex-1">
+                        <input type="text" name="search" placeholder="Search by agent name or location" value="{{ search_query }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900">
+                        <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                    </div>
+                    <button type="submit" class="ml-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
+                        Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+        <!-- Search Results Info -->
+        {% if search_query %}
+        <div class="mb-6 bg-blue-50 p-4 rounded-lg">
+            <p class="text-blue-800">
+                Showing results for: <strong>"{{ search_query }}"</strong>
+                <a href="{% url 'agents_profiles' %}" class="ml-4 text-blue-600 hover:text-blue-800 text-sm">Clear search</a>
+            </p>
+        </div>
+        {% endif %}
+        
+        <!-- All Agents Section -->
+        <section class="mb-16">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-bold">Our Agents</h2>
+                <div class="flex space-x-2">
+                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}filter=" class="px-3 py-1 {% if not current_filter %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} rounded-full text-sm">All</a>
+                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}filter=top_rated" class="px-3 py-1 {% if current_filter == 'top_rated' %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} rounded-full text-sm">Top Rated</a>
+                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}filter=most_experienced" class="px-3 py-1 {% if current_filter == 'most_experienced' %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} rounded-full text-sm">Most Experienced</a>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {% for agent in agents %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg">
+                    <!-- Agent Image -->
+                    <div class="relative h-48 w-full">
+                        {% if agent.profile_image %}
+                            <img src="{{ agent.profile_image.url }}" alt="{{ agent.user.get_full_name }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                                <i class="fas fa-user text-5xl text-gray-400"></i>
+                            </div>
+                        {% endif %}
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <h3 class="text-white font-bold">{{ agent.user.username}}</h3>
+                                    <p class="text-gray-200 text-sm">{{ agent.specialization|default:"Real Estate Agent" }}</p>
+                                </div>
+                                <div class="flex text-yellow-400">
+                                    {% with agent.rating|default:0 as rating %}
+                                    {% for i in "12345" %}
+                                        {% if rating >= forloop.counter %}
+                                            <i class="fas fa-star text-sm"></i>
+                                        {% elif rating > forloop.counter0 and rating < forloop.counter %}
+                                            <i class="fas fa-star-half-alt text-sm"></i>
+                                        {% else %}
+                                            <i class="far fa-star text-sm"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Agent Details -->
+                    <div class="p-4">
+                        <div class="flex justify-between mb-3">
+                            <div>
+                                <p class="text-sm text-gray-600"><i class="fas fa-map-marker-alt text-blue-500 mr-1"></i> {{ agent.address|truncatechars:20|default:"Location not specified" }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-blue-600">{{ agent.years_experience|default:0 }} yrs exp</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between text-center mb-4">
+                            <div>
+                                <p class="text-lg font-bold text-blue-600">{{ agent.properties_sold|default:0 }}</p>
+                                <p class="text-xs text-gray-500">Properties</p>
+                            </div>
+                            <div>
+                                <p class="text-lg font-bold text-blue-600">{{ agent.client_satisfaction|default:0 }}%</p>
+                                <p class="text-xs text-gray-500">Satisfaction</p>
+                            </div>
+                        </div>
+                        
+                        {% if agent.specialization %}
+                        <div class="mb-3">
+                            <p class="text-xs text-gray-500 mb-1">Specializes in:</p>
+                            <div class="flex flex-wrap gap-1">
+                                {% for ptype in agent.specialization.split|slice:":3" %}
+                                    <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">{{ ptype }}</span>
+                                {% endfor %}
+                                {% if agent.specialization.split|length > 3 %}
+                                    <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">+{{ agent.specialization.split|length|add:"-3" }} more</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <a href="#" class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition duration-300">
+                            View Profile
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-full text-center py-12">
+                    <i class="fas fa-user-tie text-4xl text-gray-400 mb-4"></i>
+                    <h3 class="text-xl font-medium text-gray-600">No agents found</h3>
+                    <p class="text-gray-500">
+                        {% if search_query %}
+                        No agents match your search criteria. Try a different search term.
+                        {% else %}
+                        We currently don't have any agents registered.
+                        {% endif %}
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        
+        <!-- Why Choose an Agent -->
+        <section class="mb-16 bg-white rounded-xl shadow-md p-8">
+            <h2 class="text-2xl font-bold mb-6">Why Work With a PropFinder Agent?</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="flex items-start space-x-4">
+                    <div class="bg-blue-100 p-3 rounded-full">
+                        <i class="fas fa-medal text-blue-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold mb-2">Verified Professionals</h3>
+                        <p class="text-gray-600">All agents are vetted and must meet our high standards for experience and customer service.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-4">
+                    <div class="bg-blue-100 p-3 rounded-full">
+                        <i class="fas fa-map-marked-alt text-blue-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold mb-2">Local Market Experts</h3>
+                        <p class="text-gray-600">Our agents have in-depth knowledge of their local markets and neighborhoods.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-4">
+                    <div class="bg-blue-100 p-3 rounded-full">
+                        <i class="fas fa-handshake text-blue-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold mb-2">Negotiation Power</h3>
+                        <p class="text-gray-600">Experienced negotiators who will fight to get you the best possible deal.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Become an Agent CTA -->
+        <section class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-8 text-white">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-2xl font-bold mb-4">Are You a Real Estate Agent?</h2>
+                <p class="text-lg mb-6">Join our network of top-performing agents and get access to qualified buyers and sellers.</p>
+                <button class="px-8 py-3 bg-white text-blue-600 rounded-lg font-bold hover:bg-gray-100 transition">Join Our Agent Network</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-bold mb-4">PropFinder</h3>
+                    <p class="text-gray-400">Finding your dream home since 2010. We connect buyers, renters, and sellers across the country.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'buy_properties' %}" class="text-gray-400 hover:text-white transition">Buy Properties</a></li>
+                        <li><a href="{% url 'rent_properties' %}" class="text-gray-400 hover:text-white transition">Rent Properties</a></li>
+                        <li><a href="{% url 'agents_profiles' %}" class="text-gray-400 hover:text-white transition">Find Agents</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Mortgage Calculator</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Company</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Connect With Us</h4>
+                    <div class="flex space-x-4 mb-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <p class="text-gray-400">support@propfinder.com</p>
+                    <p class="text-gray-400">+1 (555) 123-4567</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400 text-sm">
+                <p>© 2023 PropFinder. All rights reserved. | <a href="#" class="hover:text-white transition">Privacy Policy</a> | <a href="#" class="hover:text-white transition">Terms of Service</a></p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

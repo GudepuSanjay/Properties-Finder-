@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Agent Dashboard | PropertyFinder Pro{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .notification-dot {
+            position: absolute;
+            top: -0.25rem;
+            right: -0.25rem;
+            width: 0.75rem;
+            height: 0.75rem;
+            background-color: #ef4444;
+            border-radius: 9999px;
+            border: 2px solid #ffffff;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full bg-gray-50">
+    <div class="flex flex-col h-full">
+
+        <!-- HEADER START -->
+        <header class="gradient-bg text-white shadow-lg">
+            <div class="flex items-center justify-between px-6 py-4">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24">
+                            <path d="M12 14L3 21V3H21V21L12 14Z" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        <span class="ml-2 text-xl font-bold">PropFinder </span>
+                        <span class="ml-2 text-xs bg-white bg-opacity-20 px-2 py-1 rounded-full">Agent</span>
+                    </div>
+                    <nav class="hidden md:flex items-center space-x-1 ml-6">
+                        <a href="{% url 'agent_dashboard' %}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white hover:bg-opacity-10">Dashboard</a>
+                        {% comment %} <a href="{% url 'agent_property_list' %}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white hover:bg-opacity-10">My Properties</a> {% endcomment %}
+                        <a href="{% url 'appointments' %}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white hover:bg-opacity-10">Appointments</a>
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white hover:bg-opacity-10">Clients</a>
+                        {% comment %} <a href="#" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white hover:bg-opacity-10">Reports</a> {% endcomment %}
+                    </nav>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'update_profile_agent' %}" class="flex items-center max-w-xs text-sm rounded-full focus:outline-none">
+                        {% if request.user.profile.profile_image %}
+                            <img src="{{ request.user.profile.profile_image.url }}" alt="Profile" class="w-10 h-10 rounded-full">
+                        {% endif %}
+                        <span class="ml-2 text-sm font-medium text-white hidden md:inline">{{ request.user.username }}</span>
+                    </a>
+                </div>
+            </div>
+        </header>
+        <!-- HEADER END -->
+
+        <!-- PAGE CONTENT START -->
+        <main class="flex-1 overflow-y-auto p-6">
+            {% block content %}{% endblock %}
+        </main>
+        <!-- PAGE CONTENT END -->
+
+        <!-- FOOTER START -->
+        <footer class="text-center py-4 text-sm text-gray-500 bg-gray-100 border-t mt-auto">
+            &copy; {{ now|date:"Y" }} PropertyFinder Pro. All rights reserved.
+        </footer>
+        <!-- FOOTER END -->
+
+    </div>
+</body>
+</html>
